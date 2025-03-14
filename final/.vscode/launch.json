@@ -1,0 +1,34 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-CategoryApplication<category>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "meme.ms.category.CategoryApplication",
+            "projectName": "category",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-UserApplication<user>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "meme.ms.user.UserApplication",
+            "projectName": "user",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-MemeApplication<meme>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "meme.ms.meme.MemeApplication",
+            "projectName": "meme",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
