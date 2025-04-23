@@ -17,6 +17,13 @@ public class UserService {
 
 	@Transactional
 	public UserModel save(UserModel userModel) {
-		return userRepository.save(userModel);
+
+		UserModel newUser = null;
+		try {
+			newUser = userRepository.save(userModel);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		return newUser;
 	}
 }

@@ -5,6 +5,8 @@ import meme.ms.category.dtos.CategoryDto;
 import meme.ms.category.models.CategoryModel;
 import meme.ms.category.repositories.CategoryRepository;
 import meme.ms.category.services.CategoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,8 @@ public class CategoryController {
 
 	final CategoryService categoryService;
 	final CategoryRepository categoryRepository;
+	private static final Logger log = LoggerFactory.getLogger(CategoryController.class);
+	private final RestTemplate restTemplate = new RestTemplate();
 
 	public CategoryController(CategoryService categoryService, CategoryRepository categoryRepository) {
 		this.categoryService = categoryService;
@@ -29,22 +33,31 @@ public class CategoryController {
 	@PostMapping("/categories")
 	public ResponseEntity<CategoryModel> saveCategory(@RequestBody @Valid CategoryDto categoryDto) {
 
-		RestTemplate restTemplate = new RestTemplate();
-		String userUrl = "http://localhost:8081/users/d8b70d55-d97b-458e-8350-6cd59e3794be"; //d8b70d55-d97b-458e-8350-6cd59e3794be
-		var userExist = restTemplate.getForObject(userUrl, Boolean.class);
+		UUID userID = categoryDto.getUserID();
+		String userUrl = "http://localhost:8081/users/" + userID;
 
-		if (Boolean.TRUE.equals(userExist)) {
-			System.out.println("Usuário Encontrado");
+		Boolean userExists;
+		try {
+			userExists = restTemplate.getForObject(userUrl, Boolean.class);
+		} catch (Exception e) {
+			log.error("Erro ao verificar o usuário {}", userID, e);
+			return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
+		}
+
+		if (Boolean.TRUE.equals(userExists)) {
 
 			var categoryModel = new CategoryModel();
 			BeanUtils.copyProperties(categoryDto, categoryModel);
 
-			return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.save(categoryModel));
-		} else {
-			System.out.println("Usuário Não Encontrado");
-		}
+			CategoryModel savedCategory = categoryService.save(categoryModel);
 
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			log.info("Categoria criada com sucesso: nome: {} - id: {} - data: {}",
+					savedCategory.getName(), savedCategory.getCategoryId(), savedCategory.getCreated_at());
+			return ResponseEntity.status(HttpStatus.CREATED).body(savedCategory);
+		} else {
+			log.warn("Usuário {} não encontrado, categoria não será criada.", userID);
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
 	}
 
 	@GetMapping("/categories")
